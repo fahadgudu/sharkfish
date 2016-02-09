@@ -35,8 +35,19 @@ end
 
 if $0 == __FILE__
   # Example:
+  puts "Enter the file name to enter"
+  STDOUT.flush
+  file_name = gets.chomp
+  puts "File name is " + file_name
+  fname = "sample.txt"
+  somefile = File.open(fname, "w")
+  ["shark","fish","seats","iteration"].each do |input|
+    puts "Enter #{input}"
+    shark = gets.chomp
+    somefile.puts shark
+  end
+  somefile.close
   sem = Semaphore.new(1)
-
   threads = Array.new(8) do |i|
     Thread.start do
       puts "#{i} trying to enter…"
