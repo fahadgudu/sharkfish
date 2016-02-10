@@ -48,6 +48,9 @@ if $0 == __FILE__
   end
   somefile.close
   sem = Semaphore.new(1)
+  problem = Syncproblem.new(2,3,4,6)
+  problem.sharks
+  
   threads = Array.new(8) do |i|
     Thread.start do
       puts "#{i} trying to enter…"
