@@ -1,22 +1,46 @@
 class Seat
-	enum seat_type: [:empty, :sit]
-  def draw(s="Empty")
-    size = 5
-    inner_size = size - 2
-    print ('*' * size)
-    (1..inner_size).each do |i|
-      print ('*' + ' ' * inner_size + '*')
-      print ('*' * size)
-      print (s)
-    end
+  def initialize
+    @seat_type = "empty"
+    @animal_type = "none"
   end
-
+  def seat_type=(seat_type)
+    @seat_type = seat_type
+  end
+  def animal_type=(animal_type)
+    @animal_type = animal_type
+  end
+  def seat_type
+    @seat_type
+  end
+  def animal_type
+    @animal_type
+  end
 end
 
 class Table
-	def initilize(seats_count = 1)
-		@seats = Seat.new(seats_count)
+  def initialize(seats_count = 1)
+		@seats = []
 	end
+  def create_seats(seats_count = 1)
+    seats_count.times do
+      @seats << Seat.new
+    end
+  end
+  def seats
+    @seats
+  end
+  def seats_available
+    @seats.collect(&:seat_type).include?("empty")
+  end
+  def no_shark
+    !@seats.collect(&:animal_type).include?("shark")
+  end
+  def no_fish
+    !@seats.collect(&:animal_type).include?("fish")
+  end
+  def fish_count
+    @seats.collect(&:animal_type).count("fish")
+  end
 end
 
 class Animal
@@ -29,8 +53,12 @@ class Animal
 end
 
 class Fish < Animal
-  def fish_before_eat
-
+  def fish_before_eat(table)
+    if table.seats_available and table.no_shark
+      #eat weed
+    else
+      #wait
+    end 
   end
   def fish_after_eat
 
@@ -39,13 +67,42 @@ end
 
 class Shark < Animal
   def shark_before_eat
-
+    if table.seats_available and table.no_fish
+      #eat weed
+    elsif table.fish_count == 1
+      #eat fish
+    elsif table.fish_count > 1
+      #wait
+    end
   end
   def shark_after_eat
 
   end
 end
 
-s = Seat.new
-s.draw("FISh")
-seat.sit!
+class Syncproblem
+  def initialize(seats, sharks, fishes, iter)
+    @table = Table.new
+    @table.create_seats(seats)
+    @sharks = []
+    sharks.times do
+      @sharks << Shark.new
+    end
+    @fishes = []
+    fishes.times do
+      @fishes << Fish.new
+    end
+  end
+  def table
+    @table
+  end
+  def sharks
+    @sharks
+  end
+  def fishes
+    @fishes
+  end
+end
+# s = Seat.new
+# s.draw("FISh")
+# seat.sit!
