@@ -2,6 +2,7 @@ class Seat
   def initialize
     @seat_type = "empty"
     @animal_type = "none"
+    @lock = Mutex.new
   end
   def seat_type=(seat_type)
     @seat_type = seat_type
@@ -14,6 +15,23 @@ class Seat
   end
   def animal_type
     @animal_type
+  end
+  def available?
+    @lock.locked?
+  end
+  def occupy!(type)
+    return if seats_available.empty?
+    @lock.synchronize {
+      puts "Seat occupied by #{type}"
+      @animal_type = type
+      @seat_type = "full"
+      eat()
+      @animal_type = "none"
+      @seat_type = "empty"
+    }
+  end
+  def eat
+    sleep(30)
   end
 end
 
@@ -30,7 +48,9 @@ class Table
     @seats
   end
   def seats_available
-    @seats.collect(&:seat_type).include?("empty")
+    @seats.collect do |seat|
+      seat if seat.available?
+    end.compact
   end
   def no_shark
     !@seats.collect(&:animal_type).include?("shark")
@@ -58,7 +78,7 @@ class Fish < Animal
       #eat weed
     else
       #wait
-    end 
+    end
   end
   def fish_after_eat
 
