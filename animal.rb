@@ -3,22 +3,28 @@ class Seat
     @seat_type = "empty"
     @animal_type = "none"
     @lock = Mutex.new
-  end
+	end
+
   def seat_type=(seat_type)
     @seat_type = seat_type
-  end
+	end
+
   def animal_type=(animal_type)
     @animal_type = animal_type
-  end
+	end
+
   def seat_type
     @seat_type
-  end
+	end
+
   def animal_type
     @animal_type
-  end
+	end
+
   def available?
     @lock.locked?
-  end
+	end
+
   def occupy!(type)
     return if seats_available.empty?
     @lock.synchronize {
@@ -29,7 +35,8 @@ class Seat
       @animal_type = "none"
       @seat_type = "empty"
     }
-  end
+	end
+
   def eat
     sleep(30)
   end
@@ -64,38 +71,85 @@ class Table
 end
 
 class Animal
-  def shark_fish_sync_init
+  attr_accessor :status
+  READY_TO_GO = 0
+  SIT = 1
+  EAT = 2
+  WAIT = 3
+  READY = 4
+  FINISH = 5
 
+  def initialize
+    self.status = Animal::READY_TO_GO
   end
   def shark_fish_sync_cleanup
-
   end
+
+  def eat_weed(number = 1)
+    puts "#{self.class.to_s.downcase} no #{number} is eating weed this time\n"
+    sleep_and_wake(number)
+  end
+
+  def sleep_and_wake(number)
+    self.status = Animal::EAT
+    sleep(1)
+    self.status = Animal::FINISH
+		puts "#{self.class.to_s.downcase} no #{number} is finishing the job\n"
+  end
+
 end
 
 class Fish < Animal
+  @@fish_number = 0
+  attr_accessor :fish_no
+  def initialize
+    super
+    self.fish_no = @@fish_number += 1
+  end
+
   def fish_before_eat(table)
     if table.seats_available and table.no_shark
-      #eat weed
+      eat_weed(fish_no)
     else
       #wait
     end
-  end
+      self.status = Animal::WAIT
+    end
+
   def fish_after_eat
 
   end
 end
 
 class Shark < Animal
-  def shark_before_eat
+  @@shark_number = 0
+  attr_accessor :shark_no
+
+  def initialize
+    super
+    self.shark_no = @@shark_number +=1
+  end
+
+  def shark_before_eat(table)
+    puts table
     if table.seats_available and table.no_fish
-      #eat weed
+      eat_weed(shark_no)
     elsif table.fish_count == 1
-      #eat fish
+      fish = table.fishes.collect{|fish| fish.status == 'FINISH'}
+      puts "#{self.class.to_s.downcase} no #{self.shark_no} is eating fish #{fish.fish_no} this time\n"
+      table.fishes.delete(fish)
     elsif table.fish_count > 1
-      #wait
+      self.status = Animal::WAIT
     end
   end
-  def shark_after_eat
+
+  def eat_weed(number)
+    to_print = ["#{self.class.to_s.downcase} no #{number} is eating weed this time\n",
+      "Yayy!! #{self.class.to_s.downcase} no #{number} is eating Fish from the table\n"]
+    sleep_and_wake(to_print.sample)
+  end
+
+  def shark_after_eat(table)
 
   end
 end
@@ -123,6 +177,3 @@ class Syncproblem
     @fishes
   end
 end
-# s = Seat.new
-# s.draw("FISh")
-# seat.sit!

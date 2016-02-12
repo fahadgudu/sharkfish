@@ -36,8 +36,8 @@ end
 
 if $0 == __FILE__
   # Example:
-  # puts "Enter the file name to enter"
-  # STDOUT.flush
+  puts "Enter the file name to enter"
+  STDOUT.flush
   # file_name = gets.chomp
   # puts "File name is " + file_name
   # fname = "sample.txt"
@@ -48,45 +48,40 @@ if $0 == __FILE__
   #   somefile.puts shark
   # end
   # somefile.close
-  f = File.open('output.txt','w+')
-  sem = Semaphore.new(1)
-  problem = Syncproblem.new(4,6,8,6)
-  problem.sharks
-  threads = []
 
-  thr = Thread.start(1) do
-    animals = problem.fishes + problem.sharks
-    animals.each do |animal|
-      threads << Thread.start(animal) do |animal|
-        while(problem.table.seats_available.length.zero?)
-          puts  "#{animal.class}: waiting for seat"
+  problem = Syncproblem.new(2,3,10,1)
+	sem = Semaphore.new(2)
+	threads = []
+	animals = problem.fishes + problem.sharks
+  # animals = animals.shuffle!
+  seats = problem.table.seats
+  puts "Total seats: ", seats.length
+	count = (problem.fishes + problem.sharks).size
+  threads = Array.new(count) do |i|
+    Thread.start do
+			number = (animals[i].class == Fish) ? animals[i].fish_no : animals[i].shark_no
+      puts "#{animals[i].class.to_s.downcase} no #{number} trying to enter…\n"
+      sem.synchronize do
+        time = Benchmark.realtime do
+        puts "#{animals[i].class.to_s.downcase} has entered!\n"
+				 if animals[i].class.to_s.downcase == 'fish'
+           # seats[i].animal_type = 'fish'
+           # seats[i].occupy('fish')
+					 animals[i].eat_weed(number)
+				 end
+				if animals[i].class.to_s.downcase == 'shark'
+					animals[i].eat_weed(number)
+				end
+        sleep 1
         end
-        s = seats_available.first
-        s.occupy!('fish')
-        p 'occupied'
+        puts "##{animals[i].class.to_s.downcase} no #{number} process took #{time} mm execution time \n"
       end
+      sleep 1
+      puts "#{animals[i].class.to_s.downcase} no #{number} has left!\n"
     end
   end
   threads.map(&:join)
-  thr.join
-  # threads = Array.new(8) do |i|
-  #   Thread.start do
-  #     puts problem.table.seats.length
-  #     puts "#{i} trying to enter…"
-  #     sem.synchronize do
-  #       time = Benchmark.realtime do
-  #         puts "#{i} has entered!"
-  #         puts Thread.list.select {|thread| thread.status == "run"}.count
-  #         sleep 1
-  #       end
-  #       puts "#{i} process took to #{time} execute"
-  #     end
-  #     sleep 1
-  #     puts "#{i} has left!"
-  #   end
-  # end
-  # threads.map(&:join)
-end
+	end
 
 def time_method(method, *args)
   beginning_time = Time.now
